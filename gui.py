@@ -21,7 +21,15 @@ def main():
 	sidebar = SideBar(root)
 	TreeView.setroot(root)
 	root.mainloop()	
-
+		
+class Query:
+	window = None
+	def popup(tokens):
+		if Query.window != None:
+			Query.window.destroy()
+		Query.window = tk.Toplevel()
+		for i in range(len(tokens)):
+			tk.Label(Query.window, text = tokens[i], background = visual.COLOR_WHEEL[i%len(visual.COLOR_WHEEL)]).grid()
 class Authenticate:
 	def __init__(self):
 		self.window = tk.Toplevel()	
@@ -60,9 +68,7 @@ class SideBar:
 		self.query = tk.StringVar()
 		entry = ttk.Entry(self.frame, textvariable=self.query)
 		entry.grid(sticky = 'nsew', rowspan=3)	
-		ttk.Button(self.frame, text="Explain SQL query", command = self.explain).grid(sticky = 'nsew')	
-		ttk.Button(self.frame, text="Compare").grid(sticky = 'nsew')
-		ttk.Button(self.frame, text="Clear").grid(sticky = 'nsew')
+		ttk.Button(self.frame, text="Explain SQL query", command = self.explain).grid(sticky = 'nsew')
 		for row_num in range(self.frame.grid_size()[1]):
 			self.frame.rowconfigure(row_num, minsize=60)
 		entry.focus()
@@ -72,14 +78,16 @@ class SideBar:
 		try:
 			sqlquery = self.query.get()
 			qep = queryhandler.explain(codecs.unicode_escape_decode(sqlquery)[0])
-			tokens = sqlparse.format(sqlquery, reindent=True).split('\n')
+			tokens = sqlparse.format(sqlquery, reindent=True, keyword_case = 'upper', identifier_case = 'lower').split('\n')
 			for i in range(len(tokens)):
 				tokens[i] = tokens[i].strip()
+			Query.popup(tokens)
 			visual.settokens(tokens)
 			TreeView.img.configure(image='')
 			TreeView.img.image = ''
 			visual.setqep(qep[0][0][0])
 			TreeView.refresh()
+
 		except Exception as err:
 			print(err)
 			messagebox.showinfo("SQL query", "SQL query incorrect or DB disconnected.")
@@ -112,11 +120,6 @@ class TreeView:
 		photo = ImageTk.PhotoImage(Image.open('graph.gif'))
 		TreeView.img.configure(image=photo)
 		TreeView.img.image = photo
-		print(TreeView.frame.grid_size())
-		print(TreeView.canvas.winfo_height())
-		print(TreeView.canvas.winfo_width())
-		print(TreeView.frame.winfo_height())
-		print(TreeView.frame.winfo_width())
 	def onFrameConfigure(canvas):
 		canvas.configure(scrollregion=canvas.bbox("all"))
 if __name__ == '__main__':
