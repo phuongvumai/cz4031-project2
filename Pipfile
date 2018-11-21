@@ -7,6 +7,9 @@ verify_ssl = true
 
 [packages]
 psycopg2-binary = "*"
+pygraphviz = "*"
+sqlparse = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.7"
